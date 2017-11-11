@@ -1,0 +1,155 @@
+/*
+Theme Name: CB Třinec- Lištna
+Theme URI: žádná
+Description: Design navržený přímo pro stránky Církve Bratrské v Třinci - Lištné
+Author: Zuzana Drabkova
+Author URI: https://www.facebook.com/Zuzik.always.happy
+Version: 0.1
+
+Toto téma je vlastnictví Zuzany Drábkové a není dostupné pro volné a 
+veřejné používání kromě webových stránek pro CB Třinec-Lištná.
+*/
+
+/*** GLOBAL : GENERAL STYLE DEFAULTS ***/
+
+body {
+    background: #fff;
+    word-wrap: break-word;
+    margin: 0 0 0 0;
+   
+}
+body, input, textarea
+{
+	color: #656565;    
+	font-family: 'open sans', 'HelveticaNeue', 
+	'Helvetica Neue', arial, Helvetica, sans-serif;
+	line-height: 1.5;
+    font-size: 14px;
+}
+
+
+p {margin: 4px 0 12px 0;}
+a {color: #0a77e6;}
+a:hover {color: #065c88;}
+a:visited {color: #8b46d1;}
+
+
+
+/*** PAGE LAYOUT ***/
+
+/* Styles that affect the entire layout of the page */
+
+.menu-header
+{
+	overflow: hidden;
+	background-color: rgba(0,0,0,0.4);
+}
+
+
+
+/*** Hlavni stranka ***/
+div.hlavni_obrazek {
+    background-image: url("obrazky/mainpic.png");
+    min-height: 550px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 100%;
+    background-attachment: fixed; /*tohle dela efekt parallax*/
+}
+
+div.uvodni_text1 {
+    background-color: #ececec;
+    min-height: 217px;
+    height: auto;
+}
+div.uvodni_text2 {
+    margin: 0 30% 0 30%;
+    padding-bottom: 35px;
+    float: left;
+}
+
+div.hl_oznameni, div.hl_kazani, div.hl_sluzby {
+    height: auto;
+    padding: 10px 10% 10px 10%;
+
+}
+
+
+
+
+
+
+
+
+/*** Mobilni verze ***/
+@media screen and (max-width:1000px) {
+    div .uvodni_text2 {
+        margin: 0 15% 0 15%;
+        padding-bottom: 35px;
+    }
+
+}
+
+
+
+
+    /*** HEADER : MENU ***/
+
+    /* To see a menu in your header, you'll need to first add one in WordPress Admin */
+    .menu ul {
+        list-style: none;
+        margin: 0px;
+    }
+
+    .sub-menu {
+        display: none;
+    }
+
+    .menu ul li, .menu-item {
+        float: left;
+        width: 200px;
+        height: 40px;
+        text-align: center;
+        line-height: 40px;
+    }
+
+    .menu li a, .menu-item {
+        font-size: 15px;
+        text-decoration: none;
+        color: #fff;
+        display: block;
+    }
+
+        .menu li a:hover {
+            background-color: #2ab8bd;
+        }
+
+    .menu ul ul {
+        display: none;
+    }
+
+    .menu ul li {
+        display: inline;
+        float: left;
+        padding: 0 8px 0 4px;
+        line-height: 40px;
+        text-align: center;
+    }
+
+        .menu ul li a {
+            font-size: 15px;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+
+            .menu ul li a:hover {
+                background-color: #2ab8bd;
+            }
+
+
+
+    /*** FOOTER ***/
+
+

@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Kalendář CB Lištná</title>
+</head>
+
+<body>
+  <script src="http://www.datejs.com/build/date.js" type="text/javascript"></script>
+  <script type="text/javascript">
+
+    function resolveAccessToken() {
+      const client_id = '122939969451-nm6pc9104kg6m7avh3pq8sn735ha9jja.apps.googleusercontent.com';
+      const client_secret = 'iFas6FSxexJ0ztqx6QfUH8kK';
+      const refresh_token = '1/4tbmdLZ3tItmdMx1zIoc9ZdlBZ8E854-t1whajGynYw';
+      const grant_type = 'refresh_token';
+      const authData = { client_id, client_secret, refresh_token, grant_type };
+
+      return new Promise((resolve, reject) => {
+        const nowMillis = (new Date()).getTime();
+        window.accessToken = sessionStorage.getItem('cblistnaAccessToken') || '';
+        window.accessTokenExpiresAt = sessionStorage.getItem('cblistnaAccessTokenExpiresAt') || nowMillis - 1;
+        if (window.accessTokenExpiresAt < nowMillis) {
+          postJson('/oauth2/v4/token', authData)
+            .then(auth => {
+              window.accessToken = auth.access_token;
+              window.accessTokenExpiresAt = nowMillis + (auth.expires_in * 1000);
+              sessionStorage.setItem('cblistnaAccessToken', window.accessToken);
+              sessionStorage.setItem('cblistnaAccessTokenExpiresAt', window.accessTokenExpiresAt);
+              console.log('refreshed access token: ' + window.accessToken);
+              resolve(window.accessToken);
+            })
+            .catch(reject);
+        } else {
+          resolve(window.accessToken);
+        }
+      });
+    }
+
+    function ajax(method, url, headers, data) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        if (data) {
+          data = Object.keys(data)
+            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+            .join('&');
+        }
+        if (method === 'GET') {
+          url += '?' + data;
+        }
+        xhr.open(method, url, true);
+        Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(xhr.responseText);
+          }
+        }
+        xhr.onerror = () => {
+          reject(xhr.responseText);
+        }
+        if (method === 'POST') {
+          xhr.send(data);
+        } else {
+          xhr.send();
+        }
+      });
+    }
+
+    function postJson(path, data) {
+      const apiPrefix = 'https://www.googleapis.com'
+      return ajax(
+        'POST',
+        `${apiPrefix}${path}`,
+        { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data);
+    }
+
+    function getJson(path, query) {
+      const apiPrefix = 'https://www.googleapis.com'
+      return ajax(
+        'GET',
+        `${apiPrefix}${path}`,
+        { 'Authorization': `Bearer ${accessToken}` },
+        query);
+    }
+
+
+      function formatWeekDay(date) {
+          var weekDays = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+          var weekDay = weekDays[date.getDay()];
+          return weekDay;
+      }
+
+      function appendEvents(events)
+      {
+          const outlet = document.getElementById('events');
+          const header = document.createElement('h3');
+          header.innerText = events.summary;
+          outlet.appendChild(header);
+          events.items.forEach(event => {
+              const div = document.createElement('p');
+              var start = new Date(event.start.dateTime);
+              var start_done = start.toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+              var pom1 = start.toLocaleString([], { month: '2-digit', day: '2-digit' });
+              var end = new Date(event.end.dateTime);
+              var end_done;
+              var pom2 = end.toLocaleString([], { month: '2-digit', day: '2-digit' });
+              if (pom1 == pom2) {
+                  end_done = end.toLocaleString([], { hour: '2-digit', minute: '2-digit' });
+              }
+              else {
+                  end_done = end.toLocaleString([], { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+              }
+              var end1 = new Date(event.end.date);
+              var end_date = end1.toLocaleDateString([], { month: '2-digit', day: '2-digit' });
+              var start1 = new Date(event.start.date);
+              var start_date = start1.toLocaleDateString([], { month: '2-digit', day: '2-digit' });
+              var day_name = formatWeekDay(start);
+
+              var text = (event.start.dateTime ? day_name : "") + "\xa0\xa0" +
+                  (event.start.dateTime ? start_done : start_date) +
+                  (event.end.dateTime ? ('-' + "\xa0" + end_done + "\xa0") : ('-' + "\xa0" + end_date + "\xa0"));
+
+              text=text.bold();
+              text+=(event.summary) + (event.description ? (' (' + event.description + ')') : "\xa0");
+     
+              div.innerHTML = text;
+              if (event.attachments && event.attachments.length > 0) {
+                  div.appendChild(document.createTextNode(" ["));
+                  event.attachments.forEach(function (attachment, index) {
+                      var title = attachment.title.substring(0, attachment.title.length - 4);
+                      var url = attachment.fileUrl;
+                      var link = document.createElement('a');
+                      link.appendChild(document.createTextNode(title));
+                      link.title = title;
+                      link.href = url;
+                      link.target = '_blank';
+                      if (0 < index) {
+                          div.appendChild(document.createTextNode(", "));
+                      }
+                      div.appendChild(link);
+                  });
+                div.appendChild(document.createTextNode("]"));
+              }
+              div.textContent;
+              outlet.appendChild(div);
+             // outlet.appendChild(container);
+
+          });
+      }
+
+
+    const now = new Date();
+    const queryDefaults = {
+        timeMin: now.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+        maxResults: 10
+    };
+
+    
+
+
+    function presentEvents(calendar, query) {
+      return () => new Promise((resolve, reject) => {
+        getJson(calendar, query)
+          .then(events => {
+            appendEvents(events);
+            resolve();
+          })
+          .catch(reject);
+      });
+      }
+
+
+      function appendMessages(files, elementId) {
+          var outlet = document.getElementById(elementId);
+          files.forEach(function (file) {
+              var meta = parseFile(file);
+              var message = document.createElement('p');
+              var text = formatDateTime(meta.date) + ' ' + meta.title + ' (' + meta.author + ')';
+              var link = document.createElement('a');
+              link.appendChild(document.createTextNode(text));
+              link.title = text;
+              link.href = file.webContentLink.substring(0, file.webContentLink.indexOf('&export='));
+              link.target = '_blank';
+              message.appendChild(link);
+              outlet.appendChild(message);
+          });
+      }
+
+      function parseFile(file) {
+          var meta = {
+              file: file.name
+          };
+          var parts = file.name.substring(0, file.name.length - 4).split(/-/, -1);
+          var dateRaw = parts.shift();
+          meta.date = new Date(dateRaw.substring(0, 4), dateRaw.substring(4, 6) - 1, dateRaw.substring(6, 8));
+          meta.author = parts.shift();
+          meta.title = parts.shift();
+          meta.tags = [];
+          parts.forEach(function (part) {
+              if (part.startsWith('#')) {
+                  meta.tags.push(part.substring(1));
+              }
+          });
+          return meta;
+      }
+
+      var messagesQuery = {
+          orderBy: 'name desc',
+          pageSize: 10,
+          q: "mimeType='audio/mp3' and trashed=false",
+          fields: 'files(id, name, webViewLink, webContentLink)'
+      };
+
+
+    
+    resolveAccessToken()
+      .then(() => {
+        const query = Object.assign(
+          { timeMax: (new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)).toISOString() },
+          queryDefaults);
+        return presentEvents(
+          '/calendar/v3/calendars/cblistna@gmail.com/events',
+          query)();
+      })
+      .then(presentEvents(
+          '/calendar/v3/calendars/seps8o249ihvkvdhgael78ofg0@group.calendar.google.com/events',
+          queryDefaults))
+      .then(presentEvents(
+          '/calendar/v3/calendars/852scvjhsuhhl97lv3kb8r7be8@group.calendar.google.com/events',
+          queryDefaults))
+      .catch(console.error);
+
+  </script>
+  <div id="events"></div>
+</body>
+
+</html>
